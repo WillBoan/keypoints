@@ -5,23 +5,27 @@
   "permissions": ["activeTab", "declarativeContent"],
 
   "content_scripts": [{
-    "js": ["content.js"],
-    "matches": ["https://www.canlii.org/en/ca/*"]
+    "js": [
+      "jquery-3.3.1.min.js",
+      "content.js"
+    ],
+    "css": ["styles.css"],
+    "matches": ["https://www.canlii.org/en/ca/*", "https://www.canlii.org/en/bc/*"]
   }],
   "page_action": {
     "default_popup": "popup.html",
     "default_icon": {
-        "16": "images/get_started16.png",
-        "32": "images/get_started32.png",
-        "48": "images/get_started48.png",
-        "128": "images/get_started128.png"
+        "16": "images/key_icon16.png",
+        "32": "images/key_icon32.png",
+        "48": "images/key_icon48.png",
+        "128": "images/key_icon128.png"
       }
   },
   "icons": {
-      "16": "images/get_started16.png",
-      "32": "images/get_started32.png",
-      "48": "images/get_started48.png",
-      "128": "images/get_started128.png"
+      "16": "images/key_icon16.png",
+      "32": "images/key_icon32.png",
+      "48": "images/key_icon48.png",
+      "128": "images/key_icon128.png"
     },
   "options_page": "options.html",
   "manifest_version": 2

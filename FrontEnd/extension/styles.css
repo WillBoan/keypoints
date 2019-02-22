@@ -1,0 +1,22 @@
+.kp-modified-para {
+  /* background-color: rgb(0, 0, 188); */
+  /* border: 3px solid black; */
+  -webkit-transition: 150ms;
+  transition: 150ms;
+}
+.kp-modified-para:hover {
+  /* background-color: rgb(255, 228, 188) !important; */
+}
+
+.kp-citing-case-link-cont {
+  position: relative;
+  height: 0px;
+  /* width: 0px; */
+}
+.kp-citing-case-link {
+  /* visibility: hidden; */
+  position: absolute;
+  right: 0px;
+  text-align: right;
+  /* background-color: inherit; */
+}
