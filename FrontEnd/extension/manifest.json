@@ -10,7 +10,7 @@
       "content.js"
     ],
     "css": ["styles.css"],
-    "matches": ["https://www.canlii.org/en/ca/*", "https://www.canlii.org/en/bc/*"]
+    "matches": ["https://www.canlii.org/en/*/doc/*"]
   }],
   "page_action": {
     "default_popup": "popup.html",
