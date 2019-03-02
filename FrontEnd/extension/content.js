@@ -20,13 +20,22 @@ $(function() {
   // PARA AND PARA ANCHOR ELEMENTS:
   // Array of DOM paragraph number elements:
   const para_anchors = $(".paragAnchor");
-  // Function to find the paragraph's element:
+  // Array of DOM paragraph elements:
   // ----(Assumes that the paragraphs's element
   // ----is the closest ancestor with the 'p' tag)
+  const para_elements = para_anchors.closest("p");
+  para_elements.addClass("kp-para");
+  // Function to find the paragraph's element:
+  // ----(Based on para_elements)
   function getParaElement(para_num) {
-    let para_anchor = para_anchors[para_num - 1];
-    return $(para_anchor).closest("p");
+    return para_elements.eq(para_num - 1);
   }
+  // Function to get para_num from para element:
+  function getParaNum(para_element) {
+    return para_num = Number($(para_element).find(".paragAnchor").text());
+  }
+  // Get last para_num:
+  let last_para_num = getParaNum(para_elements.last());
   // Remove elements before 2 elements before para 1:
   // getParaElement(1).prev().prev().prevAll().remove();
 
@@ -207,12 +216,17 @@ $(function() {
       return link_html;
     }).join("</br>");
     // Wrap these <a> elements in two <divs>:
-    let final_html = $(citing_cases_html)
-      .wrap("<div></div>").addClass("kp-citing-case-link")
-      .wrap("<div></div>").addClass("kp-citing-case-link-cont");
+    let final_html =
+      `<div class="kp-citing-case-link-cont">
+        <div class="kp-citing-case-link">
+          ${citing_cases_html}
+        </div>
+      </div>`;
     // Append the links to the para element:
     $(para).append(final_html);
   }
+
+
 
 
 
@@ -273,56 +287,104 @@ $(function() {
 
 
   // COLLAPSIBILITY:
+  // Judge declarations:
+  const judge_declaration_regex = /(judge?ment|reason).+delivered\s+by:?\s*$/s;
+  const judge_declarations = $("p").filter(function() {
+    return judge_declaration_regex.test($(this).text());
+  });
+  // Remove all elements before first judge declaration:
+  judge_declarations.eq(0).prevAll().remove();
+
+
+
   // Get authoring judges:
-  const authoring_judge_regex = /J?J\.\s*$/i;
-  const authoring_judges = $("[style='text-transform:uppercase']").filter(function() {
+  const authoring_judge_regex = /JJ?\.\W*$|(The\sChief\sJustice):?\W*$/i;
+  const authoring_judges = $("[style='text-transform:uppercase'],.JudgeJuge").filter(function() {
     return authoring_judge_regex.test($(this).text());
   });
   // Remove material before first authoring judge:
   // authoring_judges.eq(0).closest("p").prev().prevAll().remove();
 
+  authoring_judges.addClass("kp-authoring-judges");
+
   // Move and reformat the authoring judge elements:
-  const judge_declaration_regex = /(judge?ment|reason).+delivered\s+by:?\s*$/s;
-  // const judge_declaration_1 = getParaElement(1).prevUntil($("p").filter(function() {
-  //   return judge_declaration_regex.test($(this).text());
-  // }));
-  const judge_declarations = $("p").filter(function() {
-    return judge_declaration_regex.test($(this).text());
-  });
-  // const judge_declaration_1 = getParaElement(1).prev(judge_declaration_regex.test($(this)));
-  judge_declarations.eq(0).prevAll().remove();
-
-
-
-
   authoring_judges.each(function(index) {
     // Reformat judge names:
-    let preformated_this = $(this).text().replace(/\s+/ig, " ").trim().toUpperCase();
-    let judge_names = preformated_this.match(/[^A-Za-z]*[A-Za-z\s]+J?J\.\s*$/);
+    let judge_names = $(this).text()
+      .trim()
+      .replace(/\s*—\s*$/i, "")
+      .replace(/\s+/ig, " ")
+      .trim()
+      .toUpperCase();
     $(this).text(judge_names);
     // Find para element:
     let parent = $(this).closest("p");
     // If there is a previous para like "The following are the reasons delivered by:", remove it:
-    let prev = parent.prev();
-    if (judge_declaration_regex.test(prev.text())) {prev.remove();}
+    // let prev = parent.prev();
+    // if (judge_declaration_regex.test(prev.text())) {prev.remove();}
     // Make the start of the text after the judge names span look nice:
     let next = this.nextSibling;
     let new_next = next.nodeValue.replace(/^\s*—\s*/i, "");
     next.nodeValue = new_next;
-    // Move the judge names span:
-    $(document.createElement("p"))
+    // Move the authoring judges element, and turn it into a <p>:
+    let new_authoring_judges_element = $(document.createElement("p"))
       .text(judge_names)
       .addClass("kp-authoring-judges")
       .insertBefore(parent);
+    // If this is an instance of "THE CHIEF JUSTICE", add a class to say so:
+    if (judge_names == "THE CHIEF JUSTICE") {
+      new_authoring_judges_element.addClass("kp-cjauthor");
+    }
     $(this).remove();
     // If the parent is now empty, remove it:
     if (parent.text().length === 0) {parent.remove()}
   });
 
 
+  function capitalize(str) {
+    return str.split(" ")
+      .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
+      .join(" ");
+  }
+
+  // Get Chief Justice:
+  // const judge_name_regex_part = /([^\s\d.,:;!?'"`/\\|_()[\]{}]+)/;
+  // const chief_justice_regex = new RegExp(judge_name_regex_part.source + /\s+C\.?J\.?/.source, "im");
+  const judge_regex = /[^\s\d.,:;!?'"`/\\|_()[\]{}]+(?=,|\s+and|\s+JJ?\b\.?)/gm;
+  const chief_justice_regex = /[^\s\d.,:;!?'"`/\\|_()[\]{}]+(?=\s+C\.?J\.?)/m;
+  // const judge_regex = /(\w{2})/gm;
+  // [^\s\d.,:;!?'"`/\\|_()[\]{}]+(?=,|\s+and|\s+JJ\.?)|([^\s\d.,:;!?'"`/\\|_()[\]{}]+)(?=\s+C\.?J\.?)
+  // console.log(chief_justice_regex);
+  // console.log(chief_justice_regex.source);
+  let chief_justice;
+  let judges = [];
+  judge_declarations.add($(authoring_judges)).each(function() {
+    let cj_match = $(this).text().match(chief_justice_regex);
+    if (cj_match) {
+      chief_justice = cj_match[0];
+    }
+    let j_match = $(this).text().match(judge_regex);
+    if (j_match) {
+      j_match.forEach(function(m) {
+        let capitalized_m = capitalize(m);
+        if ($.inArray(capitalized_m, judges) === -1) {
+          judges.push(capitalized_m);
+        }
+      });
+    }
+  });
+  console.log(`Chief justice: ${chief_justice}`);
+  console.log(`Judges: ${judges}`);
+
+  // Go back and change any instances of "THE CHIEF JUSTICE" in authoring_judges to the judge's name:
+  $(".kp-cjauthor").text(`${chief_justice.toUpperCase()} C.J.`);
+
+
+
+
   // HEADINGS:
   // Find headings:
-  const heading_regex = /^([A-Za-z0-9]{1,4}\.|\([A-Za-z0-9]{1,4}\))\s+\w+/i;
+  const heading_regex = /^([A-Za-z0-9]{1,4}\.|\([A-Za-z0-9]{1,4}\))\s+["“'’]?\w+/i;
   const heading_class_regex = /^Title\d+LevelTitre\d+Niveau/;
   const headings = $("p").filter(function() {
     return heading_class_regex.test($(this).attr("class"));
@@ -332,9 +394,9 @@ $(function() {
   // Remove extra whitespace characters:
   headings.each(function() {
     $(this).text($(this).text().replace(/\s+/g, " ").trim());
+    console.log($(this).text());
   });
 
-  console.log(headings.eq(0).text());
 
 
 
@@ -347,7 +409,7 @@ $(function() {
     'i','ii','iii','iv','v','vi','vii','viii','ix','x',
     'xi','xii','xiii','xiv','xv','xvi','xvii','xviii','xix','xx'
   ];
-  const list_prefix_regex = /^([A-Z\s]+J\.)|^(?:([A-Z]+)|([a-z]+)|([0-9]+))\.|^\((?:([A-Z]+)|([a-z]+)|([0-9]+))\)/;
+  const list_prefix_regex = /^([A-Z\s]+[CJ]J?\b\.?)|^(?:([A-Z]+)|([a-z]+)|([0-9]+))\.|^\((?:([A-Z]+)|([a-z]+)|([0-9]+))\)/;
   // 0 -> BINNE J.
   // 1 -> A.
   // 2 -> a.
@@ -366,14 +428,14 @@ $(function() {
   //   {type_num: 0, position: 3}
   // ];
   function getWriteListType(heading_text) {
-    // console.log(`-- Running function on '${heading_text}'...`);
+    console.log(`-- Running function on '${heading_text}'...`);
 
     let prefix_match = list_prefix_regex.exec(heading_text);
     let type_num = prefix_match.slice(1).findIndex((x) => x !== undefined);
     let prefix_char = prefix_match[type_num + 1];
 
     // Check if this type_num is in type_num_ranks:
-    let in_ranks = jQuery.inArray(type_num, type_num_ranks);
+    let in_ranks = $.inArray(type_num, type_num_ranks);
     let rank = null;
     let pos = null;
 
@@ -385,11 +447,11 @@ $(function() {
     }
 
     // Handle Roman numerals:
-    let is_letter = jQuery.inArray(type_num, [1,2,4,5]);
+    let is_letter = $.inArray(type_num, [1,2,4,5]);
     if (is_letter > -1) {
-      let al_arr_pos = jQuery.inArray(prefix_char.toLowerCase(), alphabet);
+      let al_arr_pos = $.inArray(prefix_char.toLowerCase(), alphabet);
       // console.log(`al_arr_pos = ${al_arr_pos}`);
-      let rn_arr_pos = jQuery.inArray(prefix_char.toLowerCase(), roman_numerals);
+      let rn_arr_pos = $.inArray(prefix_char.toLowerCase(), roman_numerals);
       // console.log(`rn_arr_pos = ${rn_arr_pos}`);
 
       // If it could be alphabetical, calculate what pos would be:
@@ -409,7 +471,7 @@ $(function() {
       if (rn_arr_pos > -1) {
         // Calculate type_num_RN:
         type_num_RN = type_num + 6;
-        in_ranks_RN = jQuery.inArray(type_num_RN, type_num_ranks);
+        in_ranks_RN = $.inArray(type_num_RN, type_num_ranks);
         // Calculate pos_RN and rank_RN:
         if (in_ranks_RN > -1) {
           rank_RN = in_ranks_RN;
@@ -465,18 +527,83 @@ $(function() {
   var headings_obj = {};
   headings.each(function() {
     let rank = getWriteListType($(this).text());
-    headings_obj[$(this).text()] = rank;
+    let following_para_num = getParaNum($(this).nextAll(".kp-para").eq(0));
+    console.log(following_para_num);
+    headings_obj[$(this).text()] = {rank:rank, following_para_num:following_para_num};
   });
-
-  function getRank(heading) {
-    return headings_obj[$(heading).text()];
+  function getHeadingText(heading) {
+    return heading.contents().eq(0).text();
   }
+  function getRank(heading) {
+    return headings_obj[getHeadingText(heading)].rank;
+  }
+  function getFollowingParaNum(heading) {
+    return headings_obj[getHeadingText(heading)].following_para_num;
+  }
+
+  // JQUERY PLUGINS:
+  $.fn.nextUntilEqualOrSuperordinate = function() {
+    let rank = getRank(this);
+    return this.nextUntil(headings.filter(function() {
+      return getRank($(this)) <= rank;
+    }));
+  };
+  $.fn.nextEqualOrSuperordinate = function() {
+    return this.nextUntilEqualOrSuperordinate().last().next();
+  };
+  $.fn.subordinateTo = function(heading) {
+    let heading_rank = getRank(heading);
+    return this.filter(function() {
+      return getRank($(this)) > heading_rank;
+    });
+  };
+
+  // Determine included para ranges for each heading:
+  headings.each(function() {
+    let rank = getRank($(this));
+    let following_para_num = getFollowingParaNum($(this));
+    let next_equal_or_superordinate = $(this).nextEqualOrSuperordinate();
+    let end_para_num;
+    if (next_equal_or_superordinate.length === 1) {
+      end_para_num = getFollowingParaNum(next_equal_or_superordinate) - 1;
+    } else if (next_equal_or_superordinate.length === 0) {
+      end_para_num = last_para_num;
+    }
+    headings_obj[$(this).text()]["para_range"] = [following_para_num, end_para_num];
+  });
+  function getParaRange(heading) {
+    return headings_obj[$(heading).text()].para_range;
+  }
+  headings.each(function() {
+    let para_range = getParaRange($(this));
+    let new_para_range_element = $(document.createElement("span"))
+      .text(`¶${para_range[0]}-${para_range[1]}`)
+      .addClass("kp-para-range")
+      .appendTo($(this));
+  });
+  // headings.each(function() {
+  //   console.log($(this).text(), getRank($(this)));
+  // });
+
+
+
+
 
 
 
 
 
   headings.addClass("kp-heading");
+
+
+
+
+
+
+
+
+
+
   headings.each(function() {
     collapseHeading($(this));
   });
@@ -488,49 +615,33 @@ $(function() {
     } else {
       collapseHeading($(this));
     }
-    expandCollapse($(this));
-    $(this).toggleClass("collapsed");
   });
 
   function expandHeading(heading) {
-    let rank = getRank(heading);
-    let paras_to_show = heading.nextUntil(headings.filter(function() {
-      return getRank($(this)) <= rank;
-    })).not($(".kp-heading.collapsed").not(heading).nextUntil(".kp-heading"));
+    // OPTION 1: Expanding a heading automatically expands all subheadings
+    // let paras_to_show = heading.nextUntil(headings.filter(function() {
+    //   return getRank($(this)) <= rank;
+    // }));
+
+    // OPTION 2: When expanding a heading, it will remember which subheadings were expanded and which weren't
+    // Figure out which paras shouldn't be shown
+    // (because they're in a collapsed heading):
+    let paras_not_to_show = $();
+    let collapsed_subheadings = $(".kp-heading.collapsed").subordinateTo(heading);
+    collapsed_subheadings.each(function() {
+      let next_paras = $(this).nextUntilEqualOrSuperordinate();
+      paras_not_to_show = paras_not_to_show.add(next_paras);
+    });
+    let paras_to_show = heading.nextUntilEqualOrSuperordinate().not(paras_not_to_show);
     paras_to_show.show();
+    
     heading.removeClass("collapsed");
   }
   function collapseHeading(heading) {
-    let rank = getRank(heading);
-    heading.nextUntil(headings.filter(function() {
-      return getRank($(this)) <= rank;
-    })).hide();
+    heading.nextUntilEqualOrSuperordinate().hide();
     heading.addClass("collapsed");
   }
-  //
-  // function expandCollapse(heading) {
-  //   if (heading.hasClass("collapsed")) {
-  //     let rank = getRank(heading);
-  //     let paras_to_show = heading.nextUntil(headings.filter(function() {
-  //       return getRank($(this)) <= rank;
-  //     }))
-  //       .not($(".kp-heading.collapsed").not(heading).nextUntil(".kp-heading"));
-  //     paras_to_show.show();
-  //   } else {
-  //     let rank = getRank(heading);
-  //     heading.nextUntil(headings.filter(function() {
-  //       return getRank($(this)) <= rank;
-  //     })).hide();
-  //   }
-  // }
 
-  // // Start collapsed:
-  // headings.each(function() {
-  //   let rank = getRank($(this));
-  //   $(this).nextUntil(headings.filter(function() {
-  //     return getRank($(this)) === rank;
-  //   })).hide();
-  // });
 
 
 

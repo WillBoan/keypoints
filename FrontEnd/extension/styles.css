@@ -50,3 +50,10 @@
 	border-left: 50px solid #555;
 	border-bottom: 25px solid transparent;
 }
+
+.kp-para-range {
+  position: absolute;
+  right: 0%;
+  /* text-align: right; */
+  /* float: right; */
+}
