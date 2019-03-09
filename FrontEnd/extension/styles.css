@@ -1,3 +1,9 @@
+.documentcontent {
+  position: relative;
+  font-size: 12pt;
+  font-family: "Times New Roman";
+}
+
 .kp-modified-para {
   /* background-color: rgb(0, 0, 188); */
   /* border: 3px solid black; */
@@ -21,8 +27,53 @@
   /* background-color: inherit; */
 }
 
+.kp-heading {
+  background-color: white;
+  /* position: sticky; */
+  /* top: 33px; */
+  padding-top: 5px;
+  padding-bottom: 5px;
+  text-indent: 0pt !important;
+}
 
-.kp-collapsible {
+/* .kp-heading {
+  margin-left: 27pt;
+  margin-right: 27pt;
+} */
+
+
+.kp-para-range {
+  position: absolute;
+  right: 0%;
+  /* text-indent: 0pt; */
+  /* text-align: right; */
+  /* float: right; */
+}
+
+[class^="triangle"] {
+  width: 0;
+	height: 0;
+  float: left;
+  margin-top: 4px;
+  margin-right: 5px;
+}
+.triangle-right {
+	border-top: 4px solid transparent;
+	border-left: 8px solid black;
+	border-bottom: 4px solid transparent;
+}
+.triangle-down {
+  border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 8px solid black;
+}
+
+.kp-expand-all {
+
+}
+
+
+/* .kp-collapsible {
   background-color: #eee;
   color: #444;
   cursor: pointer;
@@ -34,7 +85,7 @@
   transition: 0.4s;
 }
 .kp-collapsible:after {
-  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  content: '\02795';
   font-size: 13px;
   color: white;
   float: right;
@@ -42,18 +93,4 @@
 }
 .active, .kp-collapsible:hover {
   background-color: #ccc;
-}
-.triangle-right {
-	width: 0;
-	height: 0;
-	border-top: 25px solid transparent;
-	border-left: 50px solid #555;
-	border-bottom: 25px solid transparent;
-}
-
-.kp-para-range {
-  position: absolute;
-  right: 0%;
-  /* text-align: right; */
-  /* float: right; */
-}
+} */
