@@ -8,6 +8,7 @@
     "js": [
       "jquery-3.3.1.min.js",
       "ScrollMagic.js",
+      "CourtURL_To_Jurisdiction_Mapping.js",
       "content.js"
     ],
     "css": ["styles.css"],
