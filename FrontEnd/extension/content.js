@@ -208,74 +208,6 @@ $(function() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // FIND JUDGE DECLARATIONS
   // Judge declarations are the paragraphs like
   // "The judgment of McLachlin C.J. and Bastarache,
@@ -380,9 +312,11 @@ $(function() {
   });
   headnotes_sentences.forEach(x => {console.log(x)});
 
-
-
-
-
+  
+  var s = new Search(["sentence 1 is this one", "but sentence 2 may be better", "is sentence three the one"]);
+  var sentence_index = s.find_sentence_in_case("is sentence three the one") // output:2 (which indicates the third sentence due to 0 as start)
+  console.log(sentence_index);
 
 });
+
+
